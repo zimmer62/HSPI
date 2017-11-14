@@ -67,5 +67,41 @@ namespace Hspi
 
             Environment.Exit(0);
         }
+
+
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter",
+            Justification = "The function wouldn't do anything without a plugin.")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes",
+            Justification = "I don't know what kinds of exceptions it _could_ throw.")]
+        public static TPlugin ConnectNonblocking<TPlugin>(string[] args) where TPlugin : HspiBase, new()
+        {
+            var options = new Options();
+            if (Parser.Default.ParseArguments(args, options))
+            {
+                Console.WriteLine("Test Plugin");
+
+                // create an instance of our plugin.
+                var myPlugin = new TPlugin();
+
+                // Get our plugin to connect to Homeseer
+                Console.WriteLine($"\nConnecting to Homeseer at {options.Server}:{options.Port} ...");
+                try
+                {
+                    myPlugin.Connect(options.Server, options.Port);
+
+                    // got this far then success
+                    Console.WriteLine("  connection to homeseer successful.\n");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"  connection to homeseer failed: {ex.Message}");
+                    return myPlugin;
+                }
+                return myPlugin;
+            }
+            return null;
+        }
+
+
     }
 }
